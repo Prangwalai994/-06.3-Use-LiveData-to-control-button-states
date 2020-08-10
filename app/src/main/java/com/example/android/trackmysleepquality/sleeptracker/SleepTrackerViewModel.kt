@@ -43,6 +43,10 @@ class SleepTrackerViewModel(
         formatNights(nights, application.resources)
     }
 
+    private fun formatNights(nights: List<SleepNight>?, resources: Resources?): Any {
+        TODO("Not yet implemented")
+    }
+
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
@@ -94,8 +98,20 @@ class SleepTrackerViewModel(
                 database.update(night)
             }
         }
+    fun onClear() {
+        uiScope.launch {
+            clear()
+            tonight.value = null
+        }
+    }
+
+    suspend fun clear() {
+        withContext(Dispatchers.IO) {
+            database.clear()
+        }
     }
 }
+
 
 
 
