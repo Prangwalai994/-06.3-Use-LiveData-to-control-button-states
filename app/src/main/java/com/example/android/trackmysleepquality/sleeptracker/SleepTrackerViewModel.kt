@@ -17,9 +17,12 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
+import android.content.res.Resources
 import android.provider.SyncStateContract.Helpers.insert
+import android.provider.SyncStateContract.Helpers.update
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
 import kotlinx.coroutines.*
@@ -34,6 +37,12 @@ class SleepTrackerViewModel(
         get() = CoroutineScope(Dispatchers.Main + viewModelJob)
     private var tonight = MutableLiveData<SleepNight?>()
     private var viewModelJob = Job()
+    private val nights = database.getAllNights()
+
+    val nightsString = Transformations.map(nights) { nights ->
+        formatNights(nights, application.resources)
+    }
+
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
@@ -70,12 +79,23 @@ class SleepTrackerViewModel(
         }
     }
 
-    private suspend fun insert(newNight: SleepNight) {
-        withContext(Dispatchers.IO) {
-            val night = null
-            night?.let { database.insert(it) }
+    private fun insert(newNight: SleepNight) {
+    }
+
+    fun onStopTracking() {
+            uiScope.launch {
+                val oldNight = tonight.value ?: return@launch
+                oldNight.endTimeMilli = System.currentTimeMillis()
+                update(oldNight)
+                }
+            }
+        private suspend fun update(night: SleepNight) {
+            withContext(Dispatchers.IO) {
+                database.update(night)
+            }
         }
     }
 }
+
 
 
