@@ -31,6 +31,7 @@ import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
 import com.example.android.trackmysleepquality.database.SleepNight
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
+import com.example.android.trackmysleepquality.sleepquality.SleepQualityFragmentArgs
 
 /**
  * A fragment with buttons to record start and end times for sleep, which are saved in
@@ -49,6 +50,7 @@ class SleepTrackerFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
 
         // Get a reference to the binding object and inflate the fragment views.
+        val arguments = SleepQualityFragmentArgs.fromBundle(arguments!!)
         val binding: FragmentSleepTrackerBinding = DataBindingUtil.inflate(
                 inflater, R.layout.fragment_sleep_tracker, container, false)
         val application = requireNotNull(this.activity).application
