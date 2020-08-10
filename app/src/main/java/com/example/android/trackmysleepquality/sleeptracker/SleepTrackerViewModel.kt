@@ -21,6 +21,7 @@ import android.content.res.Resources
 import android.provider.SyncStateContract.Helpers.insert
 import android.provider.SyncStateContract.Helpers.update
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
@@ -35,25 +36,22 @@ class SleepTrackerViewModel(
         application: Application) : AndroidViewModel(application) {
     private val uiScope: CoroutineScope
         get() = CoroutineScope(Dispatchers.Main + viewModelJob)
-    private var tonight = MutableLiveData<SleepNight?>()
     private var viewModelJob = Job()
+
     private val nights = database.getAllNights()
 
     val nightsString = Transformations.map(nights) { nights ->
         formatNights(nights, application.resources)
     }
+    private var tonight = MutableLiveData<SleepNight?>()
 
-    private fun formatNights(nights: List<SleepNight>?, resources: Resources?): Any {
-        TODO("Not yet implemented")
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        viewModelJob.cancel()
-    }
     init {
         initializeTonight()
     }
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+    val navigateToSleepQuality: LiveData<SleepNight>
+        get() = _navigateToSleepQuality
+
 
     private fun initializeTonight() {
         uiScope.launch {
@@ -61,6 +59,9 @@ class SleepTrackerViewModel(
     }
 
 }
+    fun doneNavigating() {
+        _navigateToSleepQuality.value = null
+    }
 
     private suspend fun getTonightFromDatabase(): SleepNight? {
         return withContext(Dispatchers.IO) {
@@ -97,6 +98,7 @@ class SleepTrackerViewModel(
             withContext(Dispatchers.IO) {
                 database.update(night)
             }
+            _navigateToSleepQuality.value = oldNight
         }
     fun onClear() {
         uiScope.launch {
@@ -109,6 +111,10 @@ class SleepTrackerViewModel(
         withContext(Dispatchers.IO) {
             database.clear()
         }
+    }
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
     }
 }
 
